@@ -42,7 +42,7 @@
         .pagination-container {
             display: flex;
             align-items: center;
-            flex-wrap: wrap; /* Helps handle wrapping on mobile screens */
+            flex-wrap: wrap; 
             justify-content: center;
         }
         
@@ -80,7 +80,7 @@
             
             let currentPage = 1; 
             
-            // 1. Your full JSON data loaded directly to avoid CORS issues
+        
             const data = [
                 {"id": "1","name": "Lura Senger","email": "Xander_Collier@yahoo.com"},
                 {"id": "2","name": "Wilburn Weber","email": "Bennett_Kreiger11@yahoo.com"},
@@ -184,10 +184,8 @@
                 {"id": "100","name": "Arlene Kassulke","email": "Josiane_Smith@yahoo.com"}
             ];
 
-            // Trigger initial state
             render();
 
-            // 2. Event Delegation for button clicks
             paginationContainer.addEventListener('click', (e) => {
                 const targetButton = e.target.closest('.page-item');
                 if (!targetButton || targetButton.disabled) return;
@@ -201,7 +199,6 @@
                 renderPagination();
             }
 
-            // Displays 1 user per page
             function renderData() {
                 if (data.length === 0) return;
                 
@@ -236,12 +233,9 @@
                 // Previous Button
                 html += `<button class="page-item" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
                 
-                // Number Buttons: Sliding window to keep 100 buttons from cluttering the layout
-                // Shows current page + 4 pages forward and 4 pages back.
                 let startPage = Math.max(1, currentPage - 4);
                 let endPage = Math.min(totalPages, currentPage + 4);
                 
-                // Edge corrections for beginning and end of array
                 if (currentPage <= 5) {
                     endPage = Math.min(totalPages, 9);
                 }
@@ -254,10 +248,8 @@
                     html += `<button class="page-item ${activeClass}" data-page="${i}">${i}</button>`;
                 }
                 
-                // Next Button
                 html += `<button class="page-item" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
                 
-                // Last Button
                 html += `<button class="page-item" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last</button>`;
                 
                 paginationContainer.innerHTML = html;
