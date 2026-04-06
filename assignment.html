@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Pagination</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .page-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0.875rem;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            color: #337ab7;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.2s;
+        }
+        
+        .page-item:hover:not(:disabled):not(.active) {
+            background-color: #f3f4f6;
+        }
+        
+        .page-item.active {
+            background-color: #337ab7;
+            color: white;
+            border-color: #337ab7;
+            z-index: 10;
+            position: relative;
+        }
+        
+        .page-item:disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            background-color: #fff;
+        }
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .pagination-container > *:not(:first-child) {
+            margin-left: -1px;
+        }
+        
+        .pagination-container > *:first-child {
+            border-top-left-radius: 0.25rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+        
+        .pagination-container > *:last-child {
+            border-top-right-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-[#f9f9f9] p-10 font-sans flex flex-col items-center">
+    <div class="w-full max-w-4xl bg-white p-8 rounded shadow-sm border border-gray-100">
+        
+        <div id="data-container" class="mb-10 min-h-[100px] flex flex-col justify-center">
+            Loading data...
+        </div>
+
+        <div id="pagination" class="pagination-container">
+            </div>
+        
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dataContainer = document.getElementById('data-container');
+            const paginationContainer = document.getElementById('pagination');
+            
+            let data = []; // Array to hold our fetched JSON data
+            let currentPage = 1; 
+
+            // 1. Fetch data from data.json with exception handling
+            async function loadData() {
+                try {
+                    const response = await fetch('data.json');
+                    
+                    // If file is not found or server fails
+                    if (!response.ok) {
+                        throw new Error(`Failed to load file. Status: ${response.status}`);
+                    }
+
+                    data = await response.json();
+                    render(); // Render once data is fully acquired
+                    
+                } catch (err) {
+                    // Gracefully handles errors like missing file or CORS lock
+                    dataContainer.innerHTML = `
+                        <div class="text-red-500 font-bold">Error loading data.</div>
+                        <div class="text-sm text-gray-600 mt-1">${err.message}</div>
+                        <div class="text-xs text-gray-500 mt-2">Hint: Ensure you are running a local server and 'data.json' is in the exact same directory.</div>
+                    `;
+                    console.error("Caught Pagination Error:", err);
+                }
+            }
+
+            // 2. Event Delegation for button clicks
+            paginationContainer.addEventListener('click', (e) => {
+                const targetButton = e.target.closest('.page-item');
+                if (!targetButton || targetButton.disabled) return;
+                
+                const targetPage = parseInt(targetButton.getAttribute('data-page'), 10);
+                setPage(targetPage);
+            });
+
+            function render() {
+                renderData();
+                renderPagination();
+            }
+
+            // Displays 1 user per page
+            function renderData() {
+                if (data.length === 0) return;
+                
+                const item = data[currentPage - 1]; 
+                
+                if (item) {
+                    dataContainer.innerHTML = `
+                        <div class="text-sm text-gray-500 mb-1">User ID: #${item.id}</div>
+                        <div class="text-2xl font-bold text-[#333]">${item.name}</div>
+                        <div class="text-[#337ab7] text-md mt-1">${item.email}</div>
+                    `;
+                } else {
+                    dataContainer.innerHTML = '<div class="text-gray-400">No data available.</div>';
+                }
+            }
+
+            function setPage(page) {
+                if (page < 1 || page > data.length) return;
+                currentPage = page;
+                render();
+            }
+
+            function renderPagination() {
+                const totalPages = data.length;
+                if (totalPages === 0) return;
+
+                let html = '';
+                
+                // First Button
+                html += `<button class="page-item" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>First</button>`;
+                
+                // Previous Button
+                html += `<button class="page-item" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
+                
+                // Number Buttons: Sliding window to keep 100 buttons from cluttering the layout
+                let startPage = Math.max(1, currentPage - 4);
+                let endPage = Math.min(totalPages, currentPage + 4);
+                
+                // Edge corrections for beginning and end of array
+                if (currentPage <= 5) {
+                    endPage = Math.min(totalPages, 9);
+                }
+                if (currentPage > totalPages - 4) {
+                    startPage = Math.max(1, totalPages - 8);
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const activeClass = currentPage === i ? 'active' : '';
+                    html += `<button class="page-item ${activeClass}" data-page="${i}">${i}</button>`;
+                }
+                
+                // Next Button
+                html += `<button class="page-item" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
+                
+                // Last Button
+                html += `<button class="page-item" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last</button>`;
+                
+                paginationContainer.innerHTML = html;
+            }
+
+            // Fire off the network request
+            loadData();
+        });
+    </script>
+</body>
+</html>
