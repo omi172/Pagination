@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSON Pagination</title>
+    <title>Pagination</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .page-item {
@@ -92,20 +92,16 @@
                     }
 
                     data = await response.json();
-                    render(); // Render once data is fully acquired
+                    render(); 
                     
                 } catch (err) {
-                    // Gracefully handles errors like missing file or CORS lock
                     dataContainer.innerHTML = `
                         <div class="text-red-500 font-bold">Error loading data.</div>
                         <div class="text-sm text-gray-600 mt-1">${err.message}</div>
-                        <div class="text-xs text-gray-500 mt-2">Hint: Ensure you are running a local server and 'data.json' is in the exact same directory.</div>
-                    `;
+                        `;
                     console.error("Caught Pagination Error:", err);
                 }
             }
-
-            // 2. Event Delegation for button clicks
             paginationContainer.addEventListener('click', (e) => {
                 const targetButton = e.target.closest('.page-item');
                 if (!targetButton || targetButton.disabled) return;
@@ -118,8 +114,6 @@
                 renderData();
                 renderPagination();
             }
-
-            // Displays 1 user per page
             function renderData() {
                 if (data.length === 0) return;
                 
@@ -147,18 +141,14 @@
                 if (totalPages === 0) return;
 
                 let html = '';
-                
-                // First Button
+             
                 html += `<button class="page-item" data-page="1" ${currentPage === 1 ? 'disabled' : ''}>First</button>`;
-                
-                // Previous Button
+             
                 html += `<button class="page-item" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>Previous</button>`;
                 
-                // Number Buttons: Sliding window to keep 100 buttons from cluttering the layout
                 let startPage = Math.max(1, currentPage - 4);
                 let endPage = Math.min(totalPages, currentPage + 4);
                 
-                // Edge corrections for beginning and end of array
                 if (currentPage <= 5) {
                     endPage = Math.min(totalPages, 9);
                 }
@@ -170,17 +160,12 @@
                     const activeClass = currentPage === i ? 'active' : '';
                     html += `<button class="page-item ${activeClass}" data-page="${i}">${i}</button>`;
                 }
-                
-                // Next Button
                 html += `<button class="page-item" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`;
                 
-                // Last Button
                 html += `<button class="page-item" data-page="${totalPages}" ${currentPage === totalPages ? 'disabled' : ''}>Last</button>`;
                 
                 paginationContainer.innerHTML = html;
             }
-
-            // Fire off the network request
             loadData();
         });
     </script>
