@@ -80,13 +80,9 @@
             
             let data = []; // Array to hold our fetched JSON data
             let currentPage = 1; 
-
-            // 1. Fetch data from data.json with exception handling
             async function loadData() {
                 try {
                     const response = await fetch('data.json');
-                    
-                    // If file is not found or server fails
                     if (!response.ok) {
                         throw new Error(`Failed to load file. Status: ${response.status}`);
                     }
